@@ -1,6 +1,5 @@
 from flask import Flask, request
 from flask_cors import CORS
-import bcrypt
 import base64
 import io
 from imageio import imread
@@ -19,20 +18,6 @@ lung_model = tensorflow.keras.models.load_model('InceptionResNetV2-lung-and-colo
 #                       FUNCTIONS                              #
 #                                                              #
 ################################################################
-
-def encrypt(password):
-    hashedPass = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-    encoding = 'utf-8'
-    normHashedPass = str(hashedPass, encoding)
-    return {"hashPass": normHashedPass, "status": "success"}
-
-def verify(hashPassword, userPassword):
-    encHashPassword = hashPassword.encode("utf-8")
-    encUserPassword = userPassword.encode("utf-8")
-    if bcrypt.checkpw(encUserPassword, encHashPassword):
-        return {"status":"success"}
-    else:
-        return {"status":"failed"}
 
 def predict_covid(img_string):
     image = imread(io.BytesIO(base64.b64decode(img_string)))
@@ -93,17 +78,6 @@ def predict_lung(img_string):
 @app.route("/")
 def hello():
     return "Hello, Hygeia"
-
-@app.route('/register/encrypt', methods=["GET", "POST"])
-def encryption_endpoint():
-    data = request.json
-    return encrypt(data["password"])
-
-@app.route('/login/verify', methods=["GET", "POST"])
-def verfication_endpoint():
-    data = request.json
-    return verify(data["hashPassword"], data["password"])
-
 
 @app.route('/predict', methods=["GET", "POST"])
 def predict_endpoint():
